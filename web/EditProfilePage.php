@@ -19,29 +19,32 @@ if (isset($_POST['update'])) {
     $email = mysqli_real_escape_string($conn, $_POST['email']);
     $number = mysqli_real_escape_string($conn, $_POST['number']);
     $user_type = mysqli_real_escape_string($conn, $_POST['user_type']);
-    $password = mysqli_real_escape_string($conn, $_POST['password']);
+    $new_password = mysqli_real_escape_string($conn, $_POST['new_password']);
+    $old_password = mysqli_real_escape_string($conn, $_POST['old_password']);
+    $confirm_password = mysqli_real_escape_string($conn, $_POST['confirm_password']);
 
-    // Update user type logic
-    switch ($user_type) {
-        case '1':
-            $user_type_db = 1; // Buyer
-            break;
-        case '2':
-            $user_type_db = 2; // Seller
-            break;
-        case '3':
-            $user_type_db = 3; // Admin
-            break;
-        default:
-            $user_type_db = $userRow['user_type']; // Keep the original user type if invalid
-            break;
+    // Verify old password
+    $old_hashed_password = SHA1($old_password);
+    $old_password_query = mysqli_query($conn, "SELECT password FROM users WHERE user_id='$user_id'");
+    $old_password_row = mysqli_fetch_assoc($old_password_query);
+    if ($old_hashed_password != $old_password_row['password']) {
+        echo "<div class='message'>
+                <p>Old password is incorrect.</p>
+              </div>";
+        exit(); // Stop execution if old password is incorrect
     }
 
-    if (!empty($password)) {
-        $hash_password = SHA1($password);
-        $updateQuery = "UPDATE users SET username='$username', email='$email', number='$number', user_type='$user_type_db', password='$hash_password' WHERE user_id='$user_id'";
+    if (!empty($new_password)) {
+        if ($new_password != $confirm_password) {
+            echo "<div class='message'>
+                    <p>Password and confirm password do not match.</p>
+                  </div>";
+            exit(); // Stop execution if passwords do not match
+        }
+        $hash_password = SHA1($new_password);
+        $updateQuery = "UPDATE users SET username='$username', email='$email', number='$number', user_type='$user_type', password='$hash_password' WHERE user_id='$user_id'";
     } else {
-        $updateQuery = "UPDATE users SET username='$username', email='$email', number='$number', user_type='$user_type_db' WHERE user_id='$user_id'";
+        $updateQuery = "UPDATE users SET username='$username', email='$email', number='$number', user_type='$user_type' WHERE user_id='$user_id'";
     }
 
     if (mysqli_query($conn, $updateQuery)) {
@@ -94,8 +97,16 @@ if (isset($_POST['update'])) {
                     </select>
                 </div>
                 <div class="field input">
-                    <label for="password">New Password (leave blank to keep current password)</label>
-                    <input type="password" name="password" id="password">
+                    <label for="old_password">Old Password</label>
+                    <input type="password" name="old_password" id="old_password" required>
+                </div>
+                <div class="field input">
+                    <label for="new_password">New Password (leave blank to keep current password)</label>
+                    <input type="password" name="new_password" id="new_password">
+                </div>
+                <div class="field input">
+                    <label for="confirm_password">Confirm New Password</label>
+                    <input type="password" name="confirm_password" id="confirm_password">
                 </div>
                 <div class="field">
                     <input type="submit" name="update" class="btn btn-primary" value="Update Profile">
