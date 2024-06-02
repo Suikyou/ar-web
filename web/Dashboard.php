@@ -1,93 +1,87 @@
 <?php
 // Include header and database connection file
 include('header.php');
-include('dbcon.php');
+include('config.php');
 
 // Start session and redirect user to home page
 session_start();
-if(!isset($_SESSION['valid'])){
+if (!isset($_SESSION['valid'])) {
     header("Location: LoginPage.php");
     exit();
 }
+
+$user_id = $_SESSION['id'];
+
+// Fetch user details
+$userResult = mysqli_query($conn, "SELECT * FROM users WHERE user_id='$user_id'");
+$userRow = mysqli_fetch_assoc($userResult);
+
+// Fetch listings
+$query = "SELECT * FROM listings";
+$result = mysqli_query($conn, $query);
+
+if (!$result) {
+    die("Database query failed: " . mysqli_error($conn));
+}
 ?>
 
-<div class="box1">
-    <h2>Listings</h2>
-    <div class="buttons">
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addListingModal"> Add Listing </button>
-        <!-- Logout Button -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+
+<!-- Dashboard content -->
+<div class="dashboard-container">
+    <h2 class="dashboard-title">Dashboard</h2>
+    <!-- Logout button -->
+    <a href="Logout.php"><button class="btn">Logout</button></a>
+    <!-- Edit Profile Button -->
+    <a href="EditProfilePage.php"><button class="btn">Edit Profile</button></a>
+
+    <!-- Button to trigger modal -->
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#postListingModal">
+        Add Listing
+    </button>
+
+    <div class="row">
+        <?php while ($row = mysqli_fetch_assoc($result)) { ?>
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <img class="card-img-top" src="images/cow1.png" alt="Livestock Image">
+                    <div class="card-body">
+                        <h5 class="card-title">Livestock: <?php echo ($row['livestock_id'] == 1) ? 'Chicken' : 'Cattle'; ?></h5>
+                        <p class="card-text">Sex: <?php echo ($row['sex'] == 1) ? 'Male' : 'Female'; ?></p>
+                        <p class="card-text">Breed: <?php echo $row['breed']; ?></p>
+                        <p class="card-text">Age: <?php echo $row['age']; ?> years</p>
+                        <p class="card-text">Description: <?php echo $row['description']; ?></p>
+                        <p class="card-text">Posted When: <?php echo $row['posted_when']; ?></p>
+
+                        <a href="edit_listing.php?listing_id=<?php echo $row['listing_id']; ?>" class="btn btn-primary">Edit Listing</a>
+           
+                    </div>
+                </div>
+            </div>
+        <?php } ?>
     </div>
 </div>
 
-<table class="table table-hover table-bordered table-striped">
-    <thead>
-        <tr>
-            <th>Livestock</th>
-            <th>Sex</th>
-            <th>Breed</th>
-            <th>Age</th>
-            <th>Description</th>
-            <th>Update</th>
-            <th>Archive</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php
-        $query = "SELECT * FROM listings";
-        $result = mysqli_query($connection, $query);
-
-        if (!$result) {
-            die("Query failed: " . mysqli_error($connection));
-        } else {
-            while ($row = mysqli_fetch_assoc($result)) {
-                ?>
-                <tr>
-                    <td><?php echo ($row['livestock_id'] == 1) ? 'Chicken' : 'Cattle'; ?></td>
-                    <td><?php echo ($row['sex'] == 1) ? 'Male' : 'Female'; ?></td>
-                    <td><?php echo $row['breed']; ?></td>
-                    <td><?php echo $row['age']; ?> years</td>
-                    <td><?php echo $row['description']; ?></td>
-                    <td><a href="update_listing.php?id=<?php echo $row['id']; ?>" class="btn btn-success">Update</a></td>
-                    <td><button class="archive-button btn btn-danger" data-listing-id="<?php echo $row['id']; ?>">Archive</button></td>
-                </tr>
-                <?php
-            }
-        }
-        ?>
-    </tbody>
-</table>
-
-<?php
-if (isset($_GET['message'])) {
-    echo "<h6>" . $_GET['message'] . "</h6>";
-}
-?>
-<?php
-if (isset($_GET['insert_msg'])) {
-    $message = html_entity_decode($_GET['insert_msg']);
-    echo "<h6>" . $message . "</h6>";
-}
-?>
-<?php
-if (isset($_GET['update_msg'])) {
-    echo "<h6>" . $_GET['update_msg'] . "</h6>";
-}
-?>
-<?php
-if (isset($_GET['archive_msg'])) {
-    echo "<h6>" . $_GET['archive_msg'] . "</h6>";
-}
-?>
-
-<!-- Modal for Adding Listing -->
-<form action="insert_listing.php" method="post">
-    <div class="modal fade" id="addListingModal" tabindex="-1" role="dialog" aria-labelledby="addListingModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addListingModalLabel">Add Listing</h5>
-                </div>
-                <div class="modal-body">
+<!-- Modal for Posting Listing -->
+<div class="modal fade" id="postListingModal" tabindex="-1" role="dialog" aria-labelledby="postListingModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="postListingModalLabel">Add Listing</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="insert_listing.php" method="post">
                     <div class="form-group">
                         <label for="livestock_id">Livestock</label>
                         <select class="form-control" id="livestock_id" name="livestock_id">
@@ -104,61 +98,28 @@ if (isset($_GET['archive_msg'])) {
                     </div>
                     <div class="form-group">
                         <label for="breed">Breed</label>
-                        <input type="text" name="breed" class="form-control" placeholder="Enter breed">
+                        <input type="text" class="form-control" id="breed" name="breed" placeholder="Enter breed">
                     </div>
                     <div class="form-group">
                         <label for="age">Age</label>
-                        <input type="number" name="age" class="form-control" placeholder="Enter age">
+                        <input type="number" class="form-control" id="age" name="age" placeholder="Enter age">
                     </div>
                     <div class="form-group">
                         <label for="description">Description</label>
-                        <textarea name="description" class="form-control" placeholder="Enter description"></textarea>
+                        <textarea class="form-control" id="description" name="description" rows="3" placeholder="Enter description"></textarea>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" id="closeModal">Close</button>
-                    <input type="submit" class="btn btn-success" name="add_listing" value="ADD">
-                </div>
+                    <button type="submit" class="btn btn-primary" name="post_listing">Add Listing</button>
+                </form>
             </div>
         </div>
     </div>
-</form>
+</div>
 
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-<script>
-$(document).ready(function() {
-    $('.archive-button').click(function() {
-        var listingId = $(this).data('listing-id');
+<!-- Include jQuery and Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 
-        // Ask for confirmation before archiving the listing
-        var confirmArchive = confirm("Are you sure you want to archive this listing?");
-        if (confirmArchive) {
-            // Make AJAX request to archive the listing
-            $.ajax({
-                url: 'archive_listing.php',
-                type: 'POST',
-                data: { id: listingId },
-                success: function(response) {
-                    alert(response);
-                    location.reload();
-                },
-                error: function(xhr, status, error) {
-                    console.error(xhr.responseText);
-                    alert('Error archiving listing');
-                }
-            });
-        }
-    });
-
-    function closeModal() {
-        $('#addListingModal').modal('hide');
-    }
-
-    // Add event listener for close button
-    document.getElementById('closeModal').addEventListener('click', function() {
-        closeModal();
-    });
-});
-</script>
+</body>
+</html>
 
 <?php include('footer.php'); ?>
