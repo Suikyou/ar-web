@@ -1,8 +1,3 @@
-<?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-?>
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -57,6 +52,11 @@ ini_set('display_errors', 1);
                         <p>Email address is already taken, please try again.</p>
                     </div> <br>";
                 echo "<a href='javascript:self.history.back()'><button class='btn'>Go Back</button></a>";
+            } elseif ($_POST['password'] !== $_POST['confirm_password']) {
+                echo "<div class='message'>
+                        <p>Passwords do not match. Please try again.</p>
+                    </div> <br>";
+                echo "<a href='javascript:self.history.back()'><button class='btn'>Go Back</button></a>";
             } else {
                 try { 
                     $userSql = "INSERT INTO users (username, email, password, number, user_type) VALUES (?,?,?,?,?)";
@@ -67,7 +67,10 @@ ini_set('display_errors', 1);
 
                     if($user) {
                         // Registration successful
-                        header('location:Register.php');
+                        echo "<div class='message'>
+                                <p>Registration successful! Redirecting you to the login page.</p>
+                            </div> <br>";
+                        header("refresh:2; url=LoginPage.php"); // Redirect to login page after 2 seconds
                     }
 
                 } catch(Exception $e) {
@@ -96,7 +99,11 @@ ini_set('display_errors', 1);
                 </div>
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input class="form-control" type="password" name="password" id="password" autocomplete="off" >
+                    <input class="form-control" type="password" name="password" id="password" autocomplete="off" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirm_password">Confirm Password</label>
+                    <input class="form-control" type="password" name="confirm_password" id="confirm_password" autocomplete="off" required>
                 </div>
                 <div class="form-group">
                     <label for="user_type">User Type</label>
@@ -116,5 +123,10 @@ ini_set('display_errors', 1);
             </form>
         <?php } ?>
     </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
