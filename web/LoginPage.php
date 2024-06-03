@@ -80,9 +80,15 @@ if(isset($_POST['submit'])){
                 <div class="field">
                     <input type="submit" name="submit" class="btn" value="Login" required>
                 </div>
+
+
                 <div class="links">
                     Don't have an account yet? <a href="Register.php">Register Now</a> | Go back to <a href="Dashboard.php">home page</a>
                 </div>
+                <div class="links">
+                    Don't remember your password? <a href="ResetPasswordPage.php">Forgot Password</a>
+                </div>
+                
             </form>
         </div>
     </div>

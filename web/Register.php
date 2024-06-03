@@ -22,6 +22,8 @@
             $number = $_POST['number'];
             $password = $_POST['password'];
             $user_type = $_POST['user_type'];
+            $security_question = $_POST['security_question'];
+            $security_answer = $_POST['security_answer'];
 
             // Assuming 1 is for Buyer, 2 is for Seller, and 3 is for Admin
             switch ($user_type) {
@@ -59,10 +61,10 @@
                 echo "<a href='javascript:self.history.back()'><button class='btn'>Go Back</button></a>";
             } else {
                 try { 
-                    $userSql = "INSERT INTO users (username, email, password, number, user_type) VALUES (?,?,?,?,?)";
+                    $userSql = "INSERT INTO users (username, email, password, number, user_type, security_question, security_answer) VALUES (?,?,?,?,?,?,?)";
                     $stmt = $conn->prepare($userSql);
                     $hashedPassword = sha1($password);
-                    $stmt->bind_param("ssssi", $username, $email, $hashedPassword, $number, $user_type_db);
+                    $stmt->bind_param("ssssiss", $username, $email, $hashedPassword, $number, $user_type_db, $security_question, $security_answer);
                     $user = $stmt->execute();
 
                     if($user) {
@@ -104,6 +106,19 @@
                 <div class="form-group">
                     <label for="confirm_password">Confirm Password</label>
                     <input class="form-control" type="password" name="confirm_password" id="confirm_password" autocomplete="off" required>
+                </div>
+                <div class="form-group">
+                    <label for="security_question">Security Question</label>
+                    <select class="form-control" name="security_question" id="security_question" required>
+                        <option value="">Select Security Question</option>
+                        <option value="What is your mother's maiden name?">What is your mother's maiden name?</option>
+                        <option value="What city were you born in?">What city were you born in?</option>
+                        <option value="What is your favorite pet's name?">What is your favorite pet's name?</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="security_answer">Security Answer</label>
+                    <input class="form-control" type="text" name="security_answer" id="security_answer" autocomplete="off" required>
                 </div>
                 <div class="form-group">
                     <label for="user_type">User Type</label>
