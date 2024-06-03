@@ -1,6 +1,4 @@
 <?php
-// Include header and database connection file
-include('header.php');
 include('config.php');
 
 // Start session and redirect user to home page
